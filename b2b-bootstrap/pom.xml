@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.company.b2b</groupId>
+        <artifactId>b2b-commerce-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>b2b-bootstrap</artifactId>
+    <name>b2b-bootstrap</name>
+    <description>应用启动装配入口、Flyway 数据库迁移与集中环境配置</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-trade</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-approval</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-pricing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-catalog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-finance</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-iam</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-common</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL 驱动 -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <!-- Flyway 数据库版本迁移 -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.b2b.bootstrap.B2bCommerceApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

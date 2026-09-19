@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.company.b2b</groupId>
+        <artifactId>b2b-commerce-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>b2b-pricing</artifactId>
+    <name>b2b-pricing</name>
+    <description>计价与营销引擎域 (组织协议价、阶梯价匹配、活动满减、算价快照)</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.company.b2b</groupId>
+        <artifactId>b2b-commerce-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>b2b-trade</artifactId>
+    <name>b2b-trade</name>
+    <description>交易与履约域 (采购车、批量采购清单解析、结算试算会话、订单中心)</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-pricing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-catalog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-finance</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-approval</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-iam</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.company.b2b</groupId>
+            <artifactId>b2b-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>
