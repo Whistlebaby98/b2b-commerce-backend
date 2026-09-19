@@ -34,4 +34,33 @@ public class AddressController {
         String companyId = TenantContextHolder.getRequiredCompanyId();
         return ApiResponse.success(financeApplicationService.listAddresses(companyId));
     }
+
+    @Operation(summary = "新增企业地址", description = "为当前企业新增收货或开票地址档案")
+    @org.springframework.web.bind.annotation.PostMapping
+    public ApiResponse<AddressDTO> createAddress(@jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.b2b.finance.api.dto.CreateAddressRequest req) {
+        String companyId = TenantContextHolder.getRequiredCompanyId();
+        return ApiResponse.success(financeApplicationService.createAddress(companyId, req));
+    }
+
+    @Operation(summary = "设置默认企业地址", description = "将指定地址设为当前企业的默认收货/开票地址")
+    @org.springframework.web.bind.annotation.PutMapping("/{id}/default")
+    public ApiResponse<Void> setDefaultAddress(
+            @io.swagger.v3.oas.annotations.Parameter(description = "地址 ID", required = true)
+            @org.springframework.web.bind.annotation.PathVariable("id") String id
+    ) {
+        String companyId = TenantContextHolder.getRequiredCompanyId();
+        financeApplicationService.setDefaultAddress(companyId, id);
+        return ApiResponse.success(null);
+    }
+
+    @Operation(summary = "删除企业地址", description = "从当前企业档案中删除指定地址")
+    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteAddress(
+            @io.swagger.v3.oas.annotations.Parameter(description = "地址 ID", required = true)
+            @org.springframework.web.bind.annotation.PathVariable("id") String id
+    ) {
+        String companyId = TenantContextHolder.getRequiredCompanyId();
+        financeApplicationService.deleteAddress(companyId, id);
+        return ApiResponse.success(null);
+    }
 }

@@ -19,8 +19,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.b2b.finance.api.dto.CreateAddressRequest;
+import com.b2b.finance.api.dto.CreateInvoiceRequest;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -183,6 +189,176 @@ public class FinanceApplicationService {
                         .orderByDesc(InvoiceProfilePO::getCreatedAt)
         );
         return list.stream().map(this::toInvoiceDTO).collect(Collectors.toList());
+    }
+
+    /**
+     * 新增企业地址
+     *
+     * @param companyId 当前企业 ID
+     * @param req       地址入参
+     * @return 新建的地址 DTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public AddressDTO createAddress(String companyId, CreateAddressRequest req) {
+        boolean isDefault = Boolean.TRUE.equals(req.getIsDefault());
+        if (isDefault) {
+            companyAddressMapper.update(null,
+                    new LambdaUpdateWrapper<CompanyAddressPO>()
+                            .eq(CompanyAddressPO::getCompanyId, companyId)
+                            .eq(CompanyAddressPO::getKind, req.getKind())
+                            .set(CompanyAddressPO::getIsDefault, false)
+            );
+        }
+
+        String addressId = "addr_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        CompanyAddressPO po = CompanyAddressPO.builder()
+                .id(addressId)
+                .companyId(companyId)
+                .label(req.getLabel())
+                .kind(req.getKind())
+                .recipient(req.getRecipient())
+                .phone(req.getPhone())
+                .province(req.getProvince())
+                .city(req.getCity())
+                .district(req.getDistrict())
+                .detail(req.getDetail())
+                .postalCode(req.getPostalCode())
+                .isDefault(isDefault)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .deleted(false)
+                .build();
+
+        companyAddressMapper.insert(po);
+        return toAddressDTO(po);
+    }
+
+    /**
+     * 设置企业默认地址
+     *
+     * @param companyId 当前企业 ID
+     * @param addressId 目标地址 ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void setDefaultAddress(String companyId, String addressId) {
+        CompanyAddressPO target = companyAddressMapper.selectOne(
+                new LambdaQueryWrapper<CompanyAddressPO>()
+                        .eq(CompanyAddressPO::getCompanyId, companyId)
+                        .eq(CompanyAddressPO::getId, addressId)
+        );
+        if (target == null) {
+            throw new BizException(ResultCode.BAD_REQUEST, "地址不存在: " + addressId);
+        }
+
+        companyAddressMapper.update(null,
+                new LambdaUpdateWrapper<CompanyAddressPO>()
+                        .eq(CompanyAddressPO::getCompanyId, companyId)
+                        .eq(CompanyAddressPO::getKind, target.getKind())
+                        .set(CompanyAddressPO::getIsDefault, false)
+        );
+
+        target.setIsDefault(true);
+        target.setUpdatedAt(Instant.now());
+        companyAddressMapper.updateById(target);
+    }
+
+    /**
+     * 删除企业地址
+     *
+     * @param companyId 当前企业 ID
+     * @param addressId 目标地址 ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteAddress(String companyId, String addressId) {
+        companyAddressMapper.delete(
+                new LambdaQueryWrapper<CompanyAddressPO>()
+                        .eq(CompanyAddressPO::getCompanyId, companyId)
+                        .eq(CompanyAddressPO::getId, addressId)
+        );
+    }
+
+    /**
+     * 新增企业开票资质
+     *
+     * @param companyId 当前企业 ID
+     * @param req       开票资质入参
+     * @return 新建的开票资质 DTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public InvoiceDTO createInvoice(String companyId, CreateInvoiceRequest req) {
+        boolean isDefault = Boolean.TRUE.equals(req.getIsDefault());
+        if (isDefault) {
+            invoiceProfileMapper.update(null,
+                    new LambdaUpdateWrapper<InvoiceProfilePO>()
+                            .eq(InvoiceProfilePO::getCompanyId, companyId)
+                            .set(InvoiceProfilePO::getIsDefault, false)
+            );
+        }
+
+        String invoiceId = "inv_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        InvoiceProfilePO po = InvoiceProfilePO.builder()
+                .id(invoiceId)
+                .companyId(companyId)
+                .type(req.getType())
+                .title(req.getTitle())
+                .taxId(req.getTaxId())
+                .bankName(req.getBankName())
+                .bankAccount(req.getBankAccount())
+                .registeredAddress(req.getRegisteredAddress())
+                .registeredPhone(req.getRegisteredPhone())
+                .receiveEmail(req.getReceiveEmail())
+                .status("active")
+                .isDefault(isDefault)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .deleted(false)
+                .build();
+
+        invoiceProfileMapper.insert(po);
+        return toInvoiceDTO(po);
+    }
+
+    /**
+     * 设置企业默认开票资质
+     *
+     * @param companyId 当前企业 ID
+     * @param invoiceId 目标开票资质 ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void setDefaultInvoice(String companyId, String invoiceId) {
+        InvoiceProfilePO target = invoiceProfileMapper.selectOne(
+                new LambdaQueryWrapper<InvoiceProfilePO>()
+                        .eq(InvoiceProfilePO::getCompanyId, companyId)
+                        .eq(InvoiceProfilePO::getId, invoiceId)
+        );
+        if (target == null) {
+            throw new BizException(ResultCode.BAD_REQUEST, "开票资质档案不存在: " + invoiceId);
+        }
+
+        invoiceProfileMapper.update(null,
+                new LambdaUpdateWrapper<InvoiceProfilePO>()
+                        .eq(InvoiceProfilePO::getCompanyId, companyId)
+                        .set(InvoiceProfilePO::getIsDefault, false)
+        );
+
+        target.setIsDefault(true);
+        target.setUpdatedAt(Instant.now());
+        invoiceProfileMapper.updateById(target);
+    }
+
+    /**
+     * 删除企业开票资质
+     *
+     * @param companyId 当前企业 ID
+     * @param invoiceId 目标开票资质 ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteInvoice(String companyId, String invoiceId) {
+        invoiceProfileMapper.delete(
+                new LambdaQueryWrapper<InvoiceProfilePO>()
+                        .eq(InvoiceProfilePO::getCompanyId, companyId)
+                        .eq(InvoiceProfilePO::getId, invoiceId)
+        );
     }
 
     private AddressDTO toAddressDTO(CompanyAddressPO po) {

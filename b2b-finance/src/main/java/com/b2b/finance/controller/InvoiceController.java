@@ -34,4 +34,33 @@ public class InvoiceController {
         String companyId = TenantContextHolder.getRequiredCompanyId();
         return ApiResponse.success(financeApplicationService.listInvoices(companyId));
     }
+
+    @Operation(summary = "新增企业开票资质", description = "为当前企业新增增值税专用发票、普通发票或电子发票档案")
+    @org.springframework.web.bind.annotation.PostMapping
+    public ApiResponse<InvoiceDTO> createInvoice(@jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.b2b.finance.api.dto.CreateInvoiceRequest req) {
+        String companyId = TenantContextHolder.getRequiredCompanyId();
+        return ApiResponse.success(financeApplicationService.createInvoice(companyId, req));
+    }
+
+    @Operation(summary = "设置默认开票资质", description = "将指定开票档案设为当前企业的默认开票信息")
+    @org.springframework.web.bind.annotation.PutMapping("/{id}/default")
+    public ApiResponse<Void> setDefaultInvoice(
+            @io.swagger.v3.oas.annotations.Parameter(description = "开票资质 ID", required = true)
+            @org.springframework.web.bind.annotation.PathVariable("id") String id
+    ) {
+        String companyId = TenantContextHolder.getRequiredCompanyId();
+        financeApplicationService.setDefaultInvoice(companyId, id);
+        return ApiResponse.success(null);
+    }
+
+    @Operation(summary = "删除企业开票资质", description = "从当前企业档案中删除指定开票资质")
+    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteInvoice(
+            @io.swagger.v3.oas.annotations.Parameter(description = "开票资质 ID", required = true)
+            @org.springframework.web.bind.annotation.PathVariable("id") String id
+    ) {
+        String companyId = TenantContextHolder.getRequiredCompanyId();
+        financeApplicationService.deleteInvoice(companyId, id);
+        return ApiResponse.success(null);
+    }
 }

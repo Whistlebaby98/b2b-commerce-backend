@@ -58,4 +58,31 @@ public class ProductDTO implements Serializable {
 
     @Schema(description = "商品状态 (active, inactive, draft)", example = "active")
     private String status;
+
+    @Schema(description = "缩略图 URL")
+    private String thumbnail;
+
+    @Schema(description = "卡片背景色调", example = "#e4f4f3")
+    private String tone;
+
+    @Schema(description = "主题强调色", example = "#199d97")
+    private String accent;
+
+    @Schema(description = "视觉标徽文字", example = "NSK")
+    private String mark;
+
+    @Schema(description = "商品角标列表 (agreement, bestseller, new, spot, promotion)")
+    private List<String> badges;
+
+    @Schema(description = "检索标签列表")
+    private List<String> tags;
+
+    @Schema(description = "是否推荐/精选商品", example = "true")
+    private Boolean isFeatured;
+
+    @Schema(description = "创建时间 (ISO-8601)", example = "2026-07-02T08:00:00Z")
+    private String createdAt;
+
+    @Schema(description = "更新时间 (ISO-8601)", example = "2026-09-14T08:00:00Z")
+    private String updatedAt;
 }

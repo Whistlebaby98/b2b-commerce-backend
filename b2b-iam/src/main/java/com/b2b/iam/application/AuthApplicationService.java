@@ -21,12 +21,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.b2b.iam.api.dto.RegisterRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -123,6 +128,127 @@ public class AuthApplicationService {
                 .user(userDTO)
                 .currentCompany(currentCompany)
                 .availableCompanies(availableCompanies)
+                .build();
+    }
+
+    /**
+     * 买方用户自主注册并直接生成登录会话
+     *
+     * @param request 注册请求参数（姓名、企业邮箱、密码、可选企业名）
+     * @return 包含访问令牌与企业上下文的登录响应
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public LoginResponse register(RegisterRequest request) {
+        String email = request.getEmail().trim();
+        UserPO existing = userMapper.selectOne(
+                new LambdaQueryWrapper<UserPO>().eq(UserPO::getEmail, email)
+        );
+        if (existing != null) {
+            throw new BizException(ResultCode.BAD_REQUEST.getCode(), "该企业邮箱已被注册: " + email);
+        }
+
+        // 1. 创建买方用户档案
+        String userId = "usr_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        String name = request.getName().trim();
+        String avatarText = name.length() > 2 ? name.substring(0, 2) : name;
+
+        UserPO user = UserPO.builder()
+                .id(userId)
+                .name(name)
+                .email(email)
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .department("采购部")
+                .avatarText(avatarText)
+                .deleted(false)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        userMapper.insert(user);
+
+        // 2. 关联或创建客户企业
+        CompanyPO company;
+        if (StringUtils.hasText(request.getCompanyName())) {
+            String companyName = request.getCompanyName().trim();
+            company = companyMapper.selectOne(
+                    new LambdaQueryWrapper<CompanyPO>().eq(CompanyPO::getName, companyName)
+            );
+            if (company == null) {
+                String companyId = "org_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+                company = CompanyPO.builder()
+                        .id(companyId)
+                        .name(companyName)
+                        .shortName(companyName.length() > 6 ? companyName.substring(0, 6) : companyName)
+                        .taxId("91440300" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase())
+                        .customerTier("gold")
+                        .isVerified(true)
+                        .creditLimit(new BigDecimal("1000000.00"))
+                        .creditUsed(BigDecimal.ZERO)
+                        .paymentTermDays(30)
+                        .currency("CNY")
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .deleted(false)
+                        .build();
+                companyMapper.insert(company);
+            }
+        } else {
+            company = companyMapper.selectById("company-lantu");
+            if (company == null) {
+                company = companyMapper.selectOne(new LambdaQueryWrapper<CompanyPO>().last("LIMIT 1"));
+            }
+            if (company == null) {
+                String companyId = "org_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+                company = CompanyPO.builder()
+                        .id(companyId)
+                        .name("深圳市蓝图精密制造有限公司")
+                        .shortName("蓝图精密")
+                        .taxId("91440300MA5F8N7X2K")
+                        .customerTier("gold")
+                        .isVerified(true)
+                        .creditLimit(new BigDecimal("1280000.00"))
+                        .creditUsed(BigDecimal.ZERO)
+                        .paymentTermDays(30)
+                        .currency("CNY")
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .deleted(false)
+                        .build();
+                companyMapper.insert(company);
+            }
+        }
+
+        // 3. 创建成员身份关系
+        MembershipPO membership = MembershipPO.builder()
+                .userId(userId)
+                .companyId(company.getId())
+                .role("buyer")
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        membershipMapper.insert(membership);
+
+        // 4. 签发双 Token 并构造登录响应
+        String accessToken = jwtUtils.generateAccessToken(userId, company.getId());
+        String refreshToken = jwtUtils.generateRefreshToken(userId);
+
+        UserDTO userDTO = UserDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .role("buyer")
+                .department(user.getDepartment())
+                .avatarText(user.getAvatarText())
+                .companyId(company.getId())
+                .build();
+
+        OrganizationDTO orgDTO = toOrganizationDTO(company);
+
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(7200L)
+                .user(userDTO)
+                .currentCompany(orgDTO)
+                .availableCompanies(Collections.singletonList(orgDTO))
                 .build();
     }
 

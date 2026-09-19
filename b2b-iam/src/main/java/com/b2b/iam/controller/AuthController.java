@@ -47,6 +47,19 @@ public class AuthController {
     }
 
     /**
+     * 买方用户自主注册
+     *
+     * @param request 注册入参（姓名、企业邮箱、密码、可选企业名）
+     * @return 注册成功后直接签发的双 Token 与企业上下文
+     */
+    @Operation(summary = "买方用户注册", description = "自主注册新账号，自动生成买方档案并颁发访问令牌")
+    @PostMapping("/register")
+    public ApiResponse<LoginResponse> register(@Valid @RequestBody com.b2b.iam.api.dto.RegisterRequest request) {
+        LoginResponse response = authApplicationService.register(request);
+        return ApiResponse.success(response);
+    }
+
+    /**
      * 获取当前买方会话快照 (SessionSnapshot)
      *
      * @return 会话状态数据（对齐前端 SessionState）

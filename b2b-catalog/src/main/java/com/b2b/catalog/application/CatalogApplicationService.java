@@ -239,9 +239,10 @@ public class CatalogApplicationService {
                     .build());
         }
 
-        // 2. 批量从数据库中检索所有有效的 SKU
+        // 2. 批量从数据库中检索所有有效的 SKU 与对应商品
         Map<String, SkuPO> skuCodeMap = Collections.emptyMap();
         Map<String, List<PriceTierDTO>> tierMap = Collections.emptyMap();
+        Map<String, ProductPO> productMap = Collections.emptyMap();
 
         if (!validCodes.isEmpty()) {
             List<SkuPO> skuPOs = skuMapper.selectList(
@@ -252,6 +253,12 @@ public class CatalogApplicationService {
             skuCodeMap = skuPOs.stream().collect(Collectors.toMap(SkuPO::getCode, s -> s, (k1, k2) -> k1));
             List<String> skuIds = skuPOs.stream().map(SkuPO::getId).toList();
             tierMap = pricingFacade.getPriceTiersMap(skuIds);
+
+            List<String> productIds = skuPOs.stream().map(SkuPO::getProductId).distinct().toList();
+            if (!productIds.isEmpty()) {
+                List<ProductPO> productPOs = productMapper.selectBatchIds(productIds);
+                productMap = productPOs.stream().collect(Collectors.toMap(ProductPO::getId, p -> p));
+            }
         }
 
         // 3. 逐行匹配并计算阶梯成交单价
@@ -273,6 +280,11 @@ public class CatalogApplicationService {
                 List<PriceTierDTO> tiers = tierMap.getOrDefault(skuPO.getId(), Collections.emptyList());
                 SkuDTO skuDTO = toSkuDTO(skuPO, tiers);
                 row.setSku(skuDTO);
+
+                ProductPO prodPO = productMap.get(skuPO.getProductId());
+                if (prodPO != null) {
+                    row.setProduct(toProductDTO(prodPO, Collections.singletonList(skuDTO)));
+                }
 
                 // 计算当前数量命中的阶梯单价
                 BigDecimal unitPrice = pricingFacade.getTierUnitPrice(companyId, skuPO.getId(), row.getQuantity());
@@ -303,6 +315,14 @@ public class CatalogApplicationService {
                 .unit(po.getUnit())
                 .defaultSkuId(po.getDefaultSkuId())
                 .status(po.getStatus())
+                .tone(po.getTone())
+                .accent(po.getAccent())
+                .mark(po.getMark())
+                .badges(po.getBadges())
+                .tags(po.getTags())
+                .isFeatured(po.getIsFeatured())
+                .createdAt(po.getCreatedAt() != null ? po.getCreatedAt().toString() : null)
+                .updatedAt(po.getUpdatedAt() != null ? po.getUpdatedAt().toString() : null)
                 .skus(skus)
                 .build();
     }

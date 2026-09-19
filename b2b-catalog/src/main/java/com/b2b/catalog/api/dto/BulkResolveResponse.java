@@ -55,6 +55,9 @@ public class BulkResolveResponse implements Serializable {
         @Schema(description = "匹配到的有效 SKU 详情 (失败时为 null)")
         private SkuDTO sku;
 
+        @Schema(description = "匹配到的所属商品族档案 (失败时为 null)")
+        private ProductDTO product;
+
         @Schema(description = "命中阶梯后的单件成交单价 (失败时为 null)", example = "16.74")
         private BigDecimal unitPrice;
 
