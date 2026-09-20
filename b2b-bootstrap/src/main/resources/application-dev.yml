@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:b2b_commerce}?currentSchema=public&stringtype=unspecified&reWriteBatchedInserts=true
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST:192.168.2.101}:${DB_PORT:5432}/${DB_NAME:b2b_commerce}?currentSchema=public&stringtype=unspecified&reWriteBatchedInserts=true
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:123456}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -20,14 +20,14 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:192.168.2.101}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       timeout: 3000ms
 
 # RocketMQ 配置 (遵循 ADR 0002 & ADR 0004)
 rocketmq:
-  name-server: ${ROCKETMQ_NAMESRV:127.0.0.1:9876}
+  name-server: ${ROCKETMQ_NAMESRV:192.168.2.101:9876}
   producer:
     group: b2b-commerce-producer-group
     send-message-timeout: 3000

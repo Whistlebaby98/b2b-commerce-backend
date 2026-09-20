@@ -135,8 +135,8 @@ mvn spring-boot:run -pl b2b-bootstrap
 
 ### 5.1 在线接口文档与 Swagger UI
 服务启动后，在浏览器中打开以下链接即可查看完整 OpenAPI 3.0 接口文档并在线调试：
-- **Swagger UI 交互式页面**：[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **OpenAPI 规范 JSON 地址**：[http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+- **Swagger UI 交互式页面**：[http://localhost:8088/swagger-ui.html](http://localhost:8088/swagger-ui.html)
+- **OpenAPI 规范 JSON 地址**：[http://localhost:8088/v3/api-docs](http://localhost:8088/v3/api-docs)
 
 ### 5.2 预置测试账号（已完全对齐前端 b2b-portal-web）
 
@@ -169,7 +169,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*',
+        destination: 'http://localhost:8088/api/:path*',
       },
     ];
   },
