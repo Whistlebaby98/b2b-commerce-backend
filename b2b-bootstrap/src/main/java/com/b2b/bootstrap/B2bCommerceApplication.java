@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author b2b-commerce-backend
  */
 @SpringBootApplication(scanBasePackages = "com.b2b")
-@MapperScan("com.b2b.**.mapper")
+@MapperScan(basePackages = {"com.b2b.**.mapper", "com.b2b.common.outbox"})
 public class B2bCommerceApplication {
 
     public static void main(String[] args) {
