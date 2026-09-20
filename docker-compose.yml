@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL 16 关系型数据库 (含 JSONB 支持)
+  postgres:
+    image: postgres:16-alpine
+    container_name: b2b-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: b2b_commerce
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d b2b_commerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis 7 缓存与分布式幂等锁
+  redis:
+    image: redis:7-alpine
+    container_name: b2b-redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 3. RocketMQ 5.3 NameServer
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.3.0
+    container_name: b2b-rocketmq-namesrv
+    restart: always
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+    environment:
+      JAVA_OPT_EXT: "-Xms256m -Xmx256m -Xmn128m"
+
+  # 4. RocketMQ 5.3 Broker
+  rocketmq-broker:
+    image: apache/rocketmq:5.3.0
+    container_name: b2b-rocketmq-broker
+    restart: always
+    command: sh mqbroker -n rocketmq-namesrv:9876 --enable-proxy
+    depends_on:
+      - rocketmq-namesrv
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+      - "8081:8081"
+    environment:
+      NAMESRV_ADDR: "rocketmq-namesrv:9876"
+      JAVA_OPT_EXT: "-Xms512m -Xmx512m -Xmn256m"
+
+volumes:
+  pgdata:
+  redisdata:
