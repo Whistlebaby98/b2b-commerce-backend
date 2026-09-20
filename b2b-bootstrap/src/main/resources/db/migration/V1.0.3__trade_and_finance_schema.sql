@@ -80,7 +80,7 @@ ON CONFLICT (id) DO NOTHING;
 -- 3. 初始化采购车示例商品
 INSERT INTO oms_cart_item (id, company_id, user_id, sku_id, quantity, selected)
 VALUES
-    ('cart-item-1', 'company-lantu', 'user-lin-yue', 'sku-nsk-6205-zz', 12, true),
+    ('cart-item-1', 'company-lantu', 'user-lin-yue', 'sku-nsk-6205zz', 12, true),
     ('cart-item-2', 'company-lantu', 'user-lin-yue', 'sku-sick-wl12g3', 2, true),
     ('cart-item-3', 'company-lantu', 'user-lin-yue', 'sku-yaskawa-sgm7j-04', 1, true)
 ON CONFLICT (id) DO NOTHING;
