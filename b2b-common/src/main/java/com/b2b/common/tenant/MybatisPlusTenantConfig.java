@@ -1,10 +1,13 @@
 package com.b2b.common.tenant;
 
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +25,11 @@ import java.util.Set;
 @Configuration
 public class MybatisPlusTenantConfig {
 
+    @Autowired
+    public void configureJacksonTypeHandler(ObjectMapper objectMapper) {
+        JacksonTypeHandler.setObjectMapper(objectMapper);
+    }
+
     /**
      * 系统级/公共非租户表白名单（不自动追加 company_id 过滤）
      */
@@ -32,7 +40,9 @@ public class MybatisPlusTenantConfig {
             "price_tier",
             "org_company",
             "org_user",
-            "flyway_schema_history"
+            "flyway_schema_history",
+            "oms_order_line",
+            "mkt_promotion"
     );
 
     @Bean
